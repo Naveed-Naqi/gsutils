@@ -46,20 +46,20 @@ function parseThroughFolder(folder_id, func, args)
  * @param {string} file_names_to_ignore is a list of file_names that we should not copy the sheet into. 
  * By default, this only contains the current active spreadsheet name
  */
-function copySheetToAllFilesInFolder(sheet_name, folder_id, file_names_to_ignore)
+function copySheetToAllFilesInFolder(sheet_name, folder_id, filenames_to_ignore)
 {   
-    var args = [sheet_name, file_names_to_ignore];
+    var args = [sheet_name, filenames_to_ignore];
     parseThroughFolder(folder_id, copy_, args);
 }
 
-function copy_(target_spreadsheet, sheet_name, file_names_to_ignore)
+function copy_(target_spreadsheet, sheet_name, filenames_to_ignore)
 { 
     var source = SpreadsheetApp.getActiveSpreadsheet();
     var sheet_to_copy = source.getSheetByName(sheet_name);
   
-    file_names_to_ignore = typeof file_names_to_ignore !== 'undefined' ? file_names_to_ignore : [source.getName()];
+    filenames_to_ignore = typeof filenames_to_ignore !== 'undefined' ? filenames_to_ignore : [source.getName()];
   
-    if (!contains(file_names_to_ignore, target_spreadsheet.getName()))
+    if (!contains(filenames_to_ignore, target_spreadsheet.getName()))
     {
         try
         {
@@ -165,6 +165,7 @@ function createUrlSheetForFolder(folder_id)
     parseThroughFolder(folder_id, pasteUrlToSheet_, args)
     formatUrlSheet_(sheet);
 }
+
 function formatUrlSheet_(sheet)
 {
     var start = sheet.getLastRow()+1
