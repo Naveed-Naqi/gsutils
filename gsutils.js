@@ -79,17 +79,16 @@ function copy_(target_spreadsheet, sheet_name, filenames_to_ignore)
  * @param {string} target is the element to search the array for.
  * @return {boolean} true if the target exists in the array and false if it doesn't.
  */
-function contains(arr_to_search, target)
+function contains(list_to_search, target)
 {
   
   for(var i = 0; i < arr_to_search.length; i++)
   {
-    if(arr_to_search[i] == target)
+    if(list_to_search[i] == target)
     {
       return true;
     }
   }
-  
   return false;
 }
 
@@ -98,20 +97,20 @@ function contains(arr_to_search, target)
  * Make sure the sheet you want to copy does not already have the name of one of the branches, otherwise there will be an error.
  * @param {string} sheet_name is the sheet you want to duplicate
  */
-function duplicateSheets(sheet_name)
+function duplicateSheets(sheet_name, new_sheet_names)
 {
   var source = SpreadsheetApp.getActiveSpreadsheet()
-  var sheet = source.getSheetByName(sheet_name);
-  
-  var branches = ["AST", "BK", "CH", "FP", "JA", "JH", "OP", "PC", "RH", "SUN", "SUT"];
+  var sheet_to_be_duplicated = source.getSheetByName(sheet_name);
+
+  new_sheet_names = typeof args !== 'undefined' ? new_sheet_names : ["AST", "BK", "CH", "FP", "JA", "JH", "OP", "PC", "RH", "SUN", "SUT"];
   
   for (var i = 0; i < branches.length; i++)
   {
     
     try
     {
-        var copy = sheet.copyTo(source);
-        copy.setName(branches[i]);
+        var copy = sheet_to_be_duplicated.copyTo(source);
+        copy.setName(new_sheet_names[i]);
     }
     catch(err)
     {
@@ -156,10 +155,10 @@ function createUrlSheetForFolder(folder_id)
     var folder = DriveApp.getFolderById(folder_id);
     var filename = "Urls " + folder.getName();
   
-    var new_ss = createSpreadsheetInFolder(filename, folder);
+    var new_ss = createSpreadsheetInFolder(filename, folder_id);
     var sheet = new_ss.getActiveSheet();
     sheet.appendRow(["Sheet Name", "Urls"]);
-    sheet.setName(filename);
+    sheet.setName("Urls");
     
     args = [sheet];
     parseThroughFolder(folder_id, pasteUrlToSheet_, args)
@@ -198,8 +197,9 @@ function pasteUrlToSheet_(curr_ss, sheet)
   
 }
 
-function createSpreadsheetInFolder(filename, folder)
-{
+function createSpreadsheetInFolder(filename, folder_id)
+{   
+    var folder = DriveApp.getFolderById(folder_id);
     var file = SpreadsheetApp.create(filename);
     var copyFile = DriveApp.getFileById(file.getId());
     folder.addFile(copyFile);
