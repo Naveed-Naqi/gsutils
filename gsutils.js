@@ -34,6 +34,7 @@ function parseThroughFolder(folder_id, func, args)
     {
         func(curr_spreadsheet);
     }
+
   }
 }
 
@@ -42,7 +43,8 @@ function parseThroughFolder(folder_id, func, args)
  *
  * @param {string} sheet_name is the name of the sheet you would like to copy on the current Spreadsheet.
  * @param {string} targer_folder_id is the id of the target folder
- * @param {string} file_names_to_ignore is a list of file_names that we should not copy the sheet into. By default, this only contains the sheet_name
+ * @param {string} file_names_to_ignore is a list of file_names that we should not copy the sheet into. 
+ * By default, this only contains the current active spreadsheet name
  */
 function copySheetToAllFilesInFolder(sheet_name, folder_id, file_names_to_ignore)
 {   
@@ -57,10 +59,6 @@ function copy_(target_spreadsheet, sheet_name, file_names_to_ignore)
   
     file_names_to_ignore = typeof file_names_to_ignore !== 'undefined' ? file_names_to_ignore : [source.getName()];
   
-    Logger.log(target_spreadsheet);
-    Logger.log(sheet_name);
-    Logger.log(file_names_to_ignore);
-  
     if (!contains(file_names_to_ignore, target_spreadsheet.getName()))
     {
         try
@@ -70,7 +68,7 @@ function copy_(target_spreadsheet, sheet_name, file_names_to_ignore)
         }
         catch(err)
         {
-            Logger.log(err);
+            source.toast(err);
         }
     }
 }
