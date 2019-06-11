@@ -67,7 +67,7 @@ copySheetToAllFilesInFolder(sheet_name, folder_id, [source.getName(), "some file
 ## contains
 (list_to_search, target)
 
-Returns true if target is within the arr_to_search and false otherwise.
+Performs a linear search on all items in the list, and stops once it gets to the target. Worst case runtime is O(n).
 
 **arr_to_search** {any data structure with array-like indexing} : data structure to be searched.
 

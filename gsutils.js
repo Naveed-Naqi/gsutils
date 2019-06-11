@@ -1,9 +1,3 @@
-/*
-A Note on Style:
-When writing a function using the parseThroughFolder function, make sure the curr_spreadsheet is always the first parameter
-*/
-
-
 /**
  * Copies a specified sheet into all files of a given folder. Ignores any files that are specified.
  *
@@ -43,10 +37,10 @@ function parseThroughFolder(folder_id, func, args)
  *
  * @param {string} sheet_name is the name of the sheet you would like to copy on the current Spreadsheet.
  * @param {string} targer_folder_id is the id of the target folder
- * @param {string} file_names_to_ignore is a list of file_names that we should not copy the sheet into. 
+ * @param {string} filenames_to_ignore is a list of filenames that we should not copy the sheet into. 
  * By default, this only contains the current active spreadsheet name
  */
-function copySheetToAllFilesInFolder(sheet_name, folder_id, filenames_to_ignore)
+function copySheetToAllSpreadsheetsInFolder(sheet_name, folder_id, filenames_to_ignore)
 {   
     var args = [sheet_name, filenames_to_ignore];
     parseThroughFolder(folder_id, copy_, args);
@@ -68,7 +62,7 @@ function copy_(target_spreadsheet, sheet_name, filenames_to_ignore)
         }
         catch(err)
         {
-            source.toast(err);
+            Logger.log(source.getUrl() + " : " + err);
         }
     }
 }
@@ -82,7 +76,7 @@ function copy_(target_spreadsheet, sheet_name, filenames_to_ignore)
 function contains(list_to_search, target)
 {
   
-  for(var i = 0; i < arr_to_search.length; i++)
+  for(var i = 0; i < list_to_search.length; i++)
   {
     if(list_to_search[i] == target)
     {
@@ -114,7 +108,7 @@ function duplicateSheets(sheet_name, new_sheet_names)
     }
     catch(err)
     {
-        source.toast(err);
+        Logger.log(source.getUrl() + " : " + err);
     }
 
   }
@@ -157,12 +151,21 @@ function createUrlSheetForFolder(folder_id)
   
     var new_ss = createSpreadsheetInFolder(filename, folder_id);
     var sheet = new_ss.getActiveSheet();
-    sheet.appendRow(["Sheet Name", "Urls"]);
+    //sheet.appendRow(["Sheet Name", "Urls"]);
     sheet.setName("Urls");
     
     args = [sheet];
     parseThroughFolder(folder_id, pasteUrlToSheet_, args)
+    addUrlSheetHeader_(sheet);
     formatUrlSheet_(sheet);
+}
+
+function addUrlSheetHeader_(sheet)
+{
+    sheet.getDataRange().sort(1);
+    sheet.insertRowsBefore(1, 1);
+    sheet.getRange(1, 1).setValue("Sheet Name");
+    sheet.getRange(1, 2).setValue("Urls");
 }
 
 function formatUrlSheet_(sheet)
@@ -194,16 +197,46 @@ function pasteUrlToSheet_(curr_ss, sheet)
         link = curr_ss.getUrl();
         sheet.appendRow([name, link]);
     }
-  
 }
 
 function createSpreadsheetInFolder(filename, folder_id)
 {   
     var folder = DriveApp.getFolderById(folder_id);
     var file = SpreadsheetApp.create(filename);
-    var copyFile = DriveApp.getFileById(file.getId());
-    folder.addFile(copyFile);
-    DriveApp.getRootFolder().removeFile(copyFile);
+    var copy_file = DriveApp.getFileById(file.getId());
+    folder.addFile(copy_file);
+    DriveApp.getRootFolder().removeFile(copy_file);
     
     return file;
+}
+
+function deleteSheetFromAllSpreadsheetsInFolder(sheet_name, folder_id, filenames_to_ignore)
+{
+    args = [sheet_name, filenames_to_ignore];
+    parseThroughFolder(folder_id, deleteSheet_, args);
+}
+
+function deleteSheet_(spreadsheet, sheet_name, filenames_to_ignore)
+{
+    var sheet_to_delete = spreadsheet.getSheetByName(sheet_name);
+
+    filenames_to_ignore = typeof filenames_to_ignore !== 'undefined' ? filenames_to_ignore : [];
+
+    try
+    {
+        spreadsheet.deleteSheet(sheet_to_delete);
+    }
+    catch(err)
+    {
+        Logger.log(spreadsheet.getUrl() + " : " + err);
+    }
+}
+
+//By default gets the parent of the current spreadsheet
+//Default parameter will get parent folder of file id
+function getParentFolder(id)
+{
+    id = typeof id !== 'undefined' ? id : SpreadsheetApp.getActiveSpreadsheet().getId();
+
+   return DriveApp.getFileById(id).getParents().next();
 }
