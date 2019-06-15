@@ -10,6 +10,7 @@ It is designed to make developing in apps script more convenient.
 - [getFirstEmptyRowWholeRow(range, start_row)](#getFirstEmptyRowWholeRow)
 - [createUrlSheetForFolder(folder_id)](#createUrlSheetForFolder)
 - [createSpreadsheetInFolder(filename, folder)](#createSpreadsheetInFolder)
+- [getParentFolder(id)](#getParentFolder)
 
 ## parseThroughFolder
 (folder_id, func, args)
@@ -33,9 +34,11 @@ function printName(spreadsheet)
     console.log(spreadsheet.getName());
 }
 
-```
-
 This will print the names of all spreadsheets in the folder.
+
+```
+**filenames_to_ignore** {list} :  ifilenames that we should not copy the sheet into. 
+By default, this is empty.
 
 **_When writing a function as a parameter for parseThroughFolder, make sure the curr_spreadsheet is always the first parameter_**
 
@@ -97,12 +100,20 @@ Returns the first empty row in the given data range. If it cannot find the last 
 Creates a spreadsheet with the name and URL of all spreadsheets in the given folder. The newly created spreadsheet will be inside the given folder and will be named "Urls + given folder name". It will have one sheet titled "Urls" with two columns. The name of all sheets on column 1, and the url of the corresponding sheet on column 2. The first row will contain the header.
 
 **folder_id** {string} : id of the folder you wish to create the sheet for.
+By default, this is the id of the parent folder of the active spreadsheet.
 
 ## createSpreadsheetInFolder
 (filename, folder_id)
 
-Creates a spreadsheet with the name filename, in the given folder.
+Creates a spreadsheet with the name filename, in the given folder. Also returns this file object.
 
 **filename** {string} : name of the new spreadsheet you want to create.
 
 **folder_id** {string} : id of the folder you wish to create the sheet for.
+
+## getParentFolder
+(id)
+
+Returns the folder object that is the parent of the given id
+
+**id** {string} : id of a spreadsheet that is within the folder you want. By default, this is the id of the active spreadsheet.

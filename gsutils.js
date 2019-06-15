@@ -4,20 +4,32 @@
  * @param {string} folder_id is the id of the folder you want to parse through
  * @param {string} func is the function we want to perform on each spreadsheet in the folder
  * @param {string} args is a list of arguments that func will take besides the current spreadsheet
+ * @param {string} filenames_to_ignore is a list of filenames that we should not copy the sheet into. 
+ * By default, this only contains the current active spreadsheet name
  */
-function parseThroughFolder(folder_id, func, args)
+function parseThroughFolder(folder_id, func, args, filenames_to_ignore)
 {
-  var source_folder = DriveApp.getFolderById(folder_id);
-  var folder_files = source_folder.getFilesByType(MimeType.GOOGLE_SHEETS);
-  var curr_file; 
-  
-  args = typeof args !== 'undefined' ? args : [];
+    filenames_to_ignore = typeof filenames_to_ignore !== 'undefined' ? filenames_to_ignore : [];
+    args = typeof args !== 'undefined' ? args : [];
 
-  while (folder_files.hasNext()) 
-  {
-    curr_file = folder_files.next();
-    var curr_spreadsheet = SpreadsheetApp.openById(curr_file.getId());
+    var source_folder = DriveApp.getFolderById(folder_id);
+    var folder_files = source_folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+    var curr_file; 
 
+    while (folder_files.hasNext()) 
+    {
+        curr_file = folder_files.next();
+        var curr_spreadsheet = SpreadsheetApp.openById(curr_file.getId());
+
+        if(!contains(filenames_to_ignore, curr_spreadsheet.getName()))
+        {
+            performFunction_(curr_spreadsheet, func, args);
+        }
+    }
+}
+
+function performFunction_(curr_spreadsheet, func, args)
+{
     if(args.length > 0)
     {
         args.unshift(curr_spreadsheet);
@@ -28,8 +40,6 @@ function parseThroughFolder(folder_id, func, args)
     {
         func(curr_spreadsheet);
     }
-
-  }
 }
 
 /**
@@ -42,34 +52,34 @@ function parseThroughFolder(folder_id, func, args)
  */
 function copySheetToAllSpreadsheetsInFolder(sheet_name, folder_id, filenames_to_ignore)
 {   
-    var args = [sheet_name, filenames_to_ignore];
-    parseThroughFolder(folder_id, copy_, args);
+    var args = [sheet_name];
+    var source = SpreadsheetApp.getActiveSpreadsheet();
+
+    filenames_to_ignore = typeof filenames_to_ignore !== 'undefined' ? filenames_to_ignore : [source.getName()];
+    
+    parseThroughFolder(folder_id, copy_, args, filenames_to_ignore);
 }
 
-function copy_(target_spreadsheet, sheet_name, filenames_to_ignore)
+function copy_(target_spreadsheet, sheet_name)
 { 
     var source = SpreadsheetApp.getActiveSpreadsheet();
     var sheet_to_copy = source.getSheetByName(sheet_name);
   
-    filenames_to_ignore = typeof filenames_to_ignore !== 'undefined' ? filenames_to_ignore : [source.getName()];
-  
-    if (!contains(filenames_to_ignore, target_spreadsheet.getName()))
+    try
     {
-        try
-        {
-            sheet_to_copy.copyTo(target_spreadsheet);
-            target_spreadsheet.getSheets()[target_spreadsheet.getSheets().length-1].setName(sheet_name);
-        }
-        catch(err)
-        {
-            Logger.log(source.getUrl() + " : " + err);
-        }
+        sheet_to_copy.copyTo(target_spreadsheet);
+        target_spreadsheet.getSheets()[target_spreadsheet.getSheets().length-1].setName(sheet_name);
     }
+    catch(err)
+    {
+        Logger.log(source.getUrl() + " : " + err);
+    }
+    
 }
 /**
  * Checks to see if the target is contained within an array.
  *
- * @param {string} arr_to_search is an unsorted array you would like to search.
+ * @param {string} list_to_search is an unsorted array you would like to search.
  * @param {string} target is the element to search the array for.
  * @return {boolean} true if the target exists in the array and false if it doesn't.
  */
@@ -142,10 +152,13 @@ function getFirstEmptyRowWholeRow(range, start_row)
 /**
  * Creates a new spreadsheet with all names and URL's of all files in the folder. 
  * 
- * @param {string} folder_id is the id of the folder you want to parse through
+ * @param {string} folder_id is the id of the folder you want to parse through. 
+ * By default, this is the id of the parent folder of the active spreadsheet.
  */
 function createUrlSheetForFolder(folder_id)
 {
+    folder_id = typeof args !== 'undefined' ? folder_id : getParentFolder().getId();
+
     var folder = DriveApp.getFolderById(folder_id);
     var filename = "Urls " + folder.getName();
   
@@ -199,6 +212,13 @@ function pasteUrlToSheet_(curr_ss, sheet)
     }
 }
 
+/**
+ * Creates a spreadsheet, named filename, in the folder specified by folder_id.
+ * 
+ * @param {string} filename the name you  want for the new spreadsheet.
+ * @param {string} folder_id the id of the folder you want to create the sheet in.
+ * @return {file} the new file object that you have created.
+ */
 function createSpreadsheetInFolder(filename, folder_id)
 {   
     var folder = DriveApp.getFolderById(folder_id);
@@ -210,17 +230,15 @@ function createSpreadsheetInFolder(filename, folder_id)
     return file;
 }
 
-function deleteSheetFromAllSpreadsheetsInFolder(sheet_name, folder_id, filenames_to_ignore)
+function deleteSheetFromAllSpreadsheetsInFolder(sheet_name, folder_id)
 {
-    args = [sheet_name, filenames_to_ignore];
-    parseThroughFolder(folder_id, deleteSheet_, args);
+    args = [sheet_name];
+    parseThroughFolder(folder_id, deleteSheet_, args, filenames_to_ignore);
 }
 
-function deleteSheet_(spreadsheet, sheet_name, filenames_to_ignore)
+function deleteSheet_(spreadsheet, sheet_name)
 {
     var sheet_to_delete = spreadsheet.getSheetByName(sheet_name);
-
-    filenames_to_ignore = typeof filenames_to_ignore !== 'undefined' ? filenames_to_ignore : [];
 
     try
     {
@@ -232,8 +250,12 @@ function deleteSheet_(spreadsheet, sheet_name, filenames_to_ignore)
     }
 }
 
-//By default gets the parent of the current spreadsheet
-//Default parameter will get parent folder of file id
+/**
+ * Gets the folder object that is the parent of the given folder id.
+ * 
+ * @param {string} id is the id of a spreadsheet contained within the folder you want. 
+ * By default, this id is the current active spreadsheet.
+ */
 function getParentFolder(id)
 {
     id = typeof id !== 'undefined' ? id : SpreadsheetApp.getActiveSpreadsheet().getId();
