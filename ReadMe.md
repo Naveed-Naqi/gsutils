@@ -11,7 +11,7 @@ It is designed to make developing in apps script more convenient.
 - [createUrlSheetForFolder(folder_id)](#createUrlSheetForFolder)
 - [createSpreadsheetInFolder(filename, folder)](#createSpreadsheetInFolder)
 - [getParentFolder(id)](#getParentFolder)
-- [getFilesNamesJustUpdated](#getFilesNamesJustUpdated)
+- [getFilesNamesJustUpdated(folder_id , duration)](#getFilesNamesJustUpdated)
 
 ## parseThroughFolder
 (folder_id, func, args)
