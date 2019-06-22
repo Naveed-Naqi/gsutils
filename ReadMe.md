@@ -11,6 +11,7 @@ It is designed to make developing in apps script more convenient.
 - [createUrlSheetForFolder(folder_id)](#createUrlSheetForFolder)
 - [createSpreadsheetInFolder(filename, folder)](#createSpreadsheetInFolder)
 - [getParentFolder(id)](#getParentFolder)
+- [getFilesNamesJustUpdated](#getFilesNamesJustUpdated)
 
 ## parseThroughFolder
 (folder_id, func, args)
@@ -117,3 +118,12 @@ Creates a spreadsheet with the name filename, in the given folder. Also returns 
 Returns the folder object that is the parent of the given id
 
 **id** {string} : id of a spreadsheet that is within the folder you want. By default, this is the id of the active spreadsheet.
+
+## getFilesNamesJustUpdated
+(folder_id, duration)
+
+Returns a list of Spreadsheet objects that were modified within the given duration.
+
+**folder_id** {string} : id of of the folder you want to parse through. By default, it is the parent folder of the current active spreadsheet.
+
+**duration** {number} : The number of minutes that have passed since a Spreadsheet was modified.

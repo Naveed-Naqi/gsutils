@@ -157,7 +157,7 @@ function getFirstEmptyRowWholeRow(range, start_row)
  */
 function createUrlSheetForFolder(folder_id)
 {
-    folder_id = typeof args !== 'undefined' ? folder_id : getParentFolder().getId();
+    folder_id = typeof folder_id !== 'undefined' ? folder_id : getParentFolder().getId();
 
     var folder = DriveApp.getFolderById(folder_id);
     var filename = "Urls " + folder.getName();
@@ -261,4 +261,31 @@ function getParentFolder(id)
     id = typeof id !== 'undefined' ? id : SpreadsheetApp.getActiveSpreadsheet().getId();
 
    return DriveApp.getFileById(id).getParents().next();
+}
+
+/**
+ * Gets the folder object that is the parent of the given folder id.
+ * 
+ * @param {string} folder_id id of the folder you want to create the sheet in. 
+ * By default, this is the parent folder id of the current active spreadsheet.
+ * @param {int} duration the number of minutes. 
+ */
+function getFilesNamesJustUpdated(folder_id , duration)
+{
+    folder_id = typeof id !== 'undefined' ? folder_id : getParentFolder().getId();
+
+    var updated_files = [];
+    var args = [duration, updated_files];
+    parseThroughFolder(folder_id, getUpdatedfile_, args);
+    return updated_files;
+}
+
+function getUpdatedfile_(curr_spreadsheet, duration, updated_files)
+{
+    const MILLISECONDS_PER_MIN = 60000;
+
+    if (new Date() - curr_spreadsheet.getLastUpdated() > duration * MILLISECONDS_PER_MIN) 
+    {
+        updated_files.push(curr_spreadsheet);
+    }
 }
