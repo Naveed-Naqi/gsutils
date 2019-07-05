@@ -23,7 +23,14 @@ function parseThroughFolder(folder_id, func, args, filenames_to_ignore)
 
         if(!contains(filenames_to_ignore, curr_spreadsheet.getName()))
         {
-            performFunction_(curr_spreadsheet, func, args);
+            try
+            {
+                performFunction_(curr_spreadsheet, func, args);
+            }
+            catch(err)
+            {
+                Logger.log(err + " : " + curr_spreadsheet.getUrl())
+            }
         }
     }
 }
@@ -65,15 +72,8 @@ function copy_(target_spreadsheet, sheet_name)
     var source = SpreadsheetApp.getActiveSpreadsheet();
     var sheet_to_copy = source.getSheetByName(sheet_name);
   
-    try
-    {
-        sheet_to_copy.copyTo(target_spreadsheet);
-        target_spreadsheet.getSheets()[target_spreadsheet.getSheets().length-1].setName(sheet_name);
-    }
-    catch(err)
-    {
-        Logger.log(source.getUrl() + " : " + err);
-    }
+    sheet_to_copy.copyTo(target_spreadsheet);
+    target_spreadsheet.getSheets()[target_spreadsheet.getSheets().length-1].setName(sheet_name);
     
 }
 /**
@@ -264,13 +264,13 @@ function getParentFolder(id)
 }
 
 /**
- * Gets the folder object that is the parent of the given folder id.
+ * Gets files that were updated in the last n minutes where n is the duration
  * 
  * @param {string} folder_id id of the folder you want to create the sheet in. 
  * By default, this is the parent folder id of the current active spreadsheet.
  * @param {int} duration the number of minutes. 
  */
-function getFilesNamesJustUpdated(folder_id , duration)
+function getFilesJustUpdated(folder_id , duration)
 {
     folder_id = typeof id !== 'undefined' ? folder_id : getParentFolder().getId();
 
@@ -289,3 +289,16 @@ function getUpdatedfile_(curr_spreadsheet, duration, updated_files)
         updated_files.push(curr_spreadsheet);
     }
 }
+
+function copyFolder(folder_to_copy, target_folder)
+{
+    var args = [curr_spreadsheet, target_folder];
+    parseThroughFolder(folder_to_copy.getId(), copyFileToFolder_, args);
+}
+
+function copyFileToFolder_(curr_spreadsheet, target_folder)
+{
+    const name = curr_spreadsheet.getName();
+    curr_spreadsheet.makeCopy(name, target_folder);
+}
+
