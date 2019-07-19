@@ -292,13 +292,15 @@ function getUpdatedfile_(curr_spreadsheet, duration, updated_files)
 
 function copyFolder(folder_to_copy, target_folder)
 {
-    var args = [curr_spreadsheet, target_folder];
+    var args = [target_folder];
     parseThroughFolder(folder_to_copy.getId(), copyFileToFolder_, args);
 }
 
 function copyFileToFolder_(curr_spreadsheet, target_folder)
 {
-    const name = curr_spreadsheet.getName();
-    curr_spreadsheet.makeCopy(name, target_folder);
+    var name = curr_spreadsheet.getName();
+    var curr_file = DriveApp.getFileById(curr_spreadsheet.getId());
+    curr_file.makeCopy(name, target_folder);
+    Logger.log("Created new file: " + name);
 }
 
